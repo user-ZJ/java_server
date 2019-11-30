@@ -56,7 +56,7 @@ Maven 的本地仓库，在安装 Maven 后并不会创建，它是在第一次�
 运行 Maven 的时候，Maven 所需要的任何构件都是直接从本地仓库获取的。如果本地仓库没有，它会首先尝试从远程仓库下载构件至本地仓库，然后再使用本地仓库的构件。  
 默认情况下，不管Linux还是 Windows，每个用户在自己的用户目录下都有一个路径名为 .m2/respository/ 的仓库目录。  
 Maven 本地仓库默认被创建在 %USER_HOME% 目录下。要修改默认位置，在 %M2_HOME%\conf 目录中的 Maven 的 settings.xml 文件中定义另一个路径。  
-&lt;localRepository&gt;C:/MyLocalRepository&lt;/localRepository&gt;  
+&lt;localRepository&gt;C:/MyLocalRepository&lt;/localRepository&gt;    
 
 ### 中央仓库
 Maven 中央仓库是由 Maven 社区提供的仓库，其中包含了大量常用的库。  
@@ -130,3 +130,37 @@ Maven 中央仓库是由 Maven 社区提供的仓库，其中包含了大量常�
 	            </snapshots>  
 	        </repository>  
 	</repositories>
+
+## Maven导入本地jar包  
+**1.在本地maven仓库安装本地jar包**  
+maven install可以把指定的文件安装到本地maven仓库，有三种install方式   
+
+
+	指定jar包、groupid、artifactId和version，maven会自动生成相应的pom.xml文件。  
+	mvn install:install-file -Dfile=<path-to-file> -DgroupId=<group-id> -DartifactId=<artifact-id> -Dversion=<version> -Dpackaging=<packaging>      
+	如果jar包是用maven打包生成的，可以直接指定jar包和pom.xml文件  
+	mvn install:install-file -Dfile=<path-to-file> -DpomFile=<path-to-pomfile>  
+	如果jar包是用maven打包生成的，maven 2.5版本会自动根据jar包生成pom.xml文件  
+	mvn install:install-file -Dfile=<path-to-file>    
+	eg:  
+	mvn install:install-file -Dfile=LocalJar.jar -DgroupId=nlp -DartifactId=localjar -Dversion=1.0.0 -Dpackaging=jar   
+	安装成功后，在.m2/repository文件夹里可以看到jar包和pom.xml文件。  
+
+**2.把本地jar包放在项目的某个目录中**
+把本地jar包放在项目的某个目录中，就可以在pom.xml中引用该jar包了。在项目中构建目录，pom.xml添加reposiroty和dependency  
+
+
+	<repositories>
+        <repository>
+            <id>localrepository</id>
+            <url>file://${basedir}/repo</url>
+        </repository>
+    </repositories>
+
+    <dependency>
+        <groupId>nlp</groupId>
+        <artifactId>localjar</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+
+
