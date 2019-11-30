@@ -4,9 +4,16 @@ JDBC（Java DataBase Connectivity）是Java和数据库之间的一个桥梁，�
 ## 1. MYSQL JDBC使用
 
 ###  1.1 装载MYSQL的JDBC驱动并进行初始化  
-1. 导入专用的jar包  
-下载mysql-connector-java-5.0.8-bin.jar包，并在工程中导入，如果没有完成导包操作，后面会抛出ClassNotFoundException  
-2. 初始化驱动  
+1.导入专用的jar包  
+下载mysql-connector-java-5.0.8-bin.jar包，并在工程中导入，如果没有完成导包操作，后面会抛出ClassNotFoundException    
+
+
+	<dependency>
+    	<groupId>mysql</groupId>
+    	<artifactId>mysql-connector-java</artifactId>
+    	<version>8.0.18</version>
+	</dependency>
+2.初始化驱动  
 通过初始化驱动类com.mysql.jdbc.Driver来实现驱动初始化  
 
 		try {
@@ -201,7 +208,7 @@ JDBC处理事务的代码格式：
     }
 
  
-### 数据访问层 Data Access Layer (DAL)
+### 1.6 数据访问层 Data Access Layer (DAL)
 DAL最大的好处是它通过一些方法调用简化了数据库访问操作，比如insert()和find()，而不是建立连接并执行sql语句。  
 这一层处理所有与数据库相关的调用和查询。  
 **Data Transfer Object**：这个层应该包含一个简单的类叫做数据传输对象(DTO)这个对象只是一个简单的表映射，表中的每一列都是这个类中的一个成员变量。  
@@ -329,16 +336,68 @@ DAL最大的好处是它通过一些方法调用简化了数据库访问操作�
 	}
 
 
+**Object Relationship Database Mapping（ORM）**： ORM用于完成Java对象与关系型数据库的映射，是JDBC的一层封装，提高了易用性。  
+对于Java来说，常用的有Hibernate和Mybatis（iBatis）还有Spring JDBC等，在ORM核心思想的基础上周边又做了很多事情。    
+[参考](https://www.cnblogs.com/noteless/p/10319299.html)
 
-jdbc 事务、获取自增、获取元数据、ORM、DAO、数据库连接池  
 
-ORM=Object Relationship Database Mapping   
-对象和关系数据库的映射   
-DAO=DataAccess Object  
-数据访问对象 
+### 1.7 jdbc数据库连接池
+传统数据库访问方式：一次数据库访问对应一个物理连接,每次操作数据库都要打开、关闭该物理连接, 系统性能严重受损。    
+数据库连接池（Connection Pool）在系统初始运行时，主动建立足够的连接，组成一个池.每次应用应用程序请求数据库连接时，无需重新打开连接，而是从池中取出已有的连接，使用完后，不再关闭，而是归还。   
+  
+Java中常用的数据库连接池有：DBCP 、C3P0、BoneCP、Proxool、DDConnectionBroker、DBPool、XAPool、Primrose、SmartPool、MiniConnectionPoolManager及Druid等  
+
+连接池主要由三部分组成：连接池的建立、连接池中连接的使用管理、连接池的关闭。  
+
+**连接池的建立**：  
+在系统初始化时，根据相应的配置创建连接并放置在连接池中，以便需要使用时能从连接池中获取，这样就可以避免连接随意的建立、关闭造成的开销。  
+
+**连接池中连接的使用管理**：  
+连接池管理策略是连接池机制的核心。当连接池建立后，如何对连接池中的连接进行管理，解决好连接池内连接的分配和释放，对系统的性能有很大的影响。连接的合理分配、释放可提高连接的复用，降低了系统建立新连接的开销，同时也加速了用户的访问速度。  
+采用的方法是一个很有名的设计模式：Reference Counting（引用记数）。该模式在复用资源方面应用的非常广泛，把该方法运用到对于连接的分配释放上，为每一个数据库连接，保留一个引用记数，用来记录该连接的使用者的个数。   
+（1）当客户请求数据库连接时，首先查看连接池中是否有空闲连接（指当前没有分配出去的连接）。如果存在空闲连接，则把连接分配给客户并作相应处理（即标记该连接为正在使用，引用计数加1）。如果没有空闲连接，则查看当前所开的连接数是不是已经达到maxConn（最大连接数），如果没达到就重新创建一个连接给请求的客户；如果达到就按设定的maxWaitTime（最大等待时间）进行等待，如果等待maxWaitTime后仍没有空闲连接，就抛出无空闲连接的异常给用户。   
+（2）当客户释放数据库连接时，先判断该连接的引用次数是否超过了规定值，如果超过就删除该连接，并判断当前连接池内总的连接数是否小于minConn（最小连接数），若小于就将连接池充满；如果没超过就将该连接标记为开放状态，可供再次复用。可以看出正是这套策略保证了数据库连接的有效复用，避免频繁地建立、释放连接所带来的系统资源开销。  
+
+**连接池的关闭**：  
+当应用程序退出时，应关闭连接池，此时应把在连接池建立时向数据库申请的连接对象统一归还给数据库（即关闭所有数据库连接），这与连接池的建立正好是一个相反过程。  
+
+**DBCP(DataBase connection pool),数据库连接池**：  
+DBCP(是 apache 上的一个 java 连接池项目，也是 tomcat 使用的连接池组件。单独使用dbcp需要3个包：commons-dbcp.jar,commons-pool.jar,commons-collections.jar由于建立数据库连接是一个非常耗时耗资源的行为，所以通过连接池预先同数据库建立一些连接，放在内存中，应用程序需要建立数据库连接时直接到连接池中申请一个就行，用完后再放回去。    
+
+	#连接设置
+	driverClassName=com.mysql.cj.jdbc.Driver
+	url=jdbc:mysql://localhost:3306/库?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT
+	username=root
+	password=123456
+	#初始化连接
+	initsize=5
+	#最大连接数量
+	maxactive=10
+	#最大空闲连接
+	maxidle=6
+	#最小空闲连接
+	minidle=2
+	#超时等待时间，以毫秒为单位
+	maxwait=60000
+	#JDBC驱动建立连接时附带的连接属性属性的格式必须为这样：[属性名=property;]
+	connectionProperties=useUnicode=true;characterEncoding=gbk  
+	#指定由连接池所创建的连接的自动提交（auto-commit）状态
+	defaultAutoCommit=true
+	#driver default 指定由连接池所创建的连接的只读（read-only）状态。
+	defaultReadOnly=
+	#driver default 指定由连接池所创建的连接的事务级别（TransactionIsolation）
+	defaultTransactionIsolation=READ_UNCOMMITTED
+	
+示例源码：  
+源码\dbcp mysql连接池   
+
+
+**C3P0** 
+
 
 
 # 参考
 https://dzone.com/articles/building-simple-data-access-layer-using-jdbc  
-https://www.cnblogs.com/noteless/p/10319299.html  
+https://www.cnblogs.com/noteless/p/10319299.html    
+https://blog.csdn.net/weixin_40751299/article/details/81609332
 
