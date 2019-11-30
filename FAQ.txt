@@ -1,0 +1,7 @@
+1. Navicat过期问题解决  
+https://blog.csdn.net/yyx3214/article/details/79428582
+
+2. The server time zone value 'XXX' is unrecognized or represents more than one time zone.   
+加上serverTimezone=GMT，如果需要使用gmt+8时区，需要写成GMT%2B8，否则会被解析为空
+将jdbc.url = jdbc:mysql://127.0.0.1:3306/db?useUnicode=true&characterEncoding=utf8
+改为jdbc.url = jdbc:mysql://127.0.0.1:3306/db?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT
