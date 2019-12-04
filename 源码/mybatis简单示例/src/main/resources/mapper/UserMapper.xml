@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.mapper.UserMapper">
+    <!-- 自定义返回结果集 -->
+    <resultMap id="userMap" type="User">
+        <id property="id" column="user_id" javaType="java.lang.Integer"></id>
+        <result property="name" column="user_name" javaType="java.lang.String"></result>
+        <result property="dept" column="user_dept" javaType="java.lang.String"></result>
+        <result property="phone" column="user_phone" javaType="java.lang.String"></result>
+    </resultMap>
+
+
+    <select id="GetUserByID" parameterType="int" resultMap="userMap">
+        select * from `user_info` where user_id = #{id}
+    </select>
+</mapper>
