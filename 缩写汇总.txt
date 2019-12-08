@@ -1,0 +1,8 @@
+JDBC：Java Database Connectivity 
+MVC：Model View Controller，是模型(model)－视图(view)－控制器(controller)的缩写，一种软件设计典范，用一种业务逻辑、数据、界面显示分离的方法组织代码，将业务逻辑聚集到一个部件里面，在改进和个性化定制界面及用户交互的同时，不需要重新编写业务逻辑。
+RDBMSs：关系数据库管理系统
+CRUD：增加(Create)、读取(Retrieve)、更新(Update)和删除(Delete)
+JTA：Java 事务 API
+JNDI：Java 命名和目录界面  
+HQL：Hibernate 查询语言  
+POJO：Plain Ordinary Java Object，实际就是普通JavaBeans，是为了避免和EJB混淆所创造的简称
