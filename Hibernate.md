@@ -222,9 +222,225 @@ Hibernate 的完整概念是提取 Java 类属性中的值，并且将它们保�
 * meta 标签是一个可选元素，可以被用来修饰类。
 * id 标签将类中独一无二的 ID 属性与数据库表中的主键关联起来。id 元素中的 name 属性引用类的性质，column 属性引用数据库表的列。type 属性保存 Hibernate 映射的类型，这个类型会将从 Java 转换成 SQL 数据类型。  
 * 在 id 元素中的 generator 标签用来自动生成主键值。设置 generator 标签中的 class 属性可以设置 native 使 Hibernate 可以使用 identity, sequence 或 hilo 算法根据底层数据库的情况来创建主键。
-* property 标签用来将 Java 类的属性与数据库表的列匹配。标签中 name 属性引用的是类的性质，column 属性引用的是数据库表的列。type 属性保存 Hibernate 映射的类型，这个类型会将从 Java 转换成 SQL 数据类型。  
+* property 标签用来将 Java 类的属性与数据库表的列匹配。标签中 name 属性引用的是类的性质，column 属性引用的是数据库表的列。type 属性保存 Hibernate 映射的类型，这个类型会将从 Java 转换成 SQL 数据类型。    
+
+## 注解
+Hibernate 可以使用 XML 映射文件来完成从 POJO 到数据库表的数据转换；也可以通过注解的方式来完成从 POJO 到数据库表的数据转换。  
+Hibernate 注解是一种强大的来给对象和关系映射表提供元数据的方法。所有的元数据被添加到 POJO java 文件代码中，这有利于用户在开发时更好的理解表的结构和 POJO。  
+使用注解来表示映射信息，可以更好的移植；使用基于 XML 的映射,可以得到更大的灵活性。  
+
+	@Entity
+	@Table(name="user_info")
+	public class UserBean {
+	    @Id
+	    @GeneratedValue
+	    @Column(name="user_id")
+	    private int id;
+	    @Column(name="user_name")
+	    private String username;
+	    @Column(name="user_phone")
+	    private String phone;
+	    @Column(name="user_website")
+	    private String website;
+	    @Column(name="user_dept")
+	    private String dept;
+	
+	    public UserBean(){};
+	    public UserBean(int id){
+	        this.id = id;
+	    }
+		getter and setter function
+	}
+
+@Entity：标志着这个类为一个实体 bean，所以它必须含有一个没有参数的构造函数并且在可保护范围是可见的。  
+@Table：明确表的详细信息保证实体在数据库中持续存在，提供了四个属性，表的名称，目录,模式,在表中可以对列制定独特的约束。  
+@Id:主键
+@GeneratedValue:主键生成策略  
+@Column:指定某一列与某一个字段或是属性映射的细节信息,常用的属性:name 属性允许显式地指定列的名称,length 属性为用于映射一个值，特别为一个字符串值的列的大小,nullable 属性允许当生成模式时，一个列可以被标记为非空,unique 属性允许列中只能含有唯一的内容
+
+使用注解方式获取factory方式有所不同：  
+factory = new Configuration().configure().addAnnotatedClass(UserBean.class).buildSessionFactory();  
 
 
+## Hibernate查询语言HQL
+Hibernate 查询语言（HQL）是一种面向对象的查询语言，类似于 SQL，但不是去对表和列进行操作，而是面向对象和它们的属性。 HQL 查询被 Hibernate 翻译为传统的 SQL 查询从而对数据库进行操作。  
+在 HQL 中一些关键字比如 SELECT ，FROM 和 WHERE 等，是不区分大小写的，但是一些属性比如表名和列名是区分大小写的。  
+
+**FROM 语句**  
+
+	String hql = "FROM Employee";
+	//完全限定类名
+	String hql = "FROM com.hibernatebook.criteria.Employee";  
+	Query query = session.createQuery(hql);
+	List results = query.list();
+
+**AS 语句**  
+AS 语句能够用来给你的类分配别名，尤其是在长查询的情况下  
+
+	String hql = "FROM Employee AS E";  
+
+**SELECT 语句**  
+如果只想得到对象的几个**属性**而不是整个对象你需要使用 SELECT 语句。  
+
+	String hql = "SELECT E.firstName FROM Employee E";  
+
+**WHERE 语句**  
+想要精确地从数据库存储中返回特定对象，你需要使用 WHERE 语句  
+
+	String hql = "FROM Employee E WHERE E.id = 10";  
+
+**ORDER BY 语句**  
+为了给 HSQ 查询结果进行排序，你将需要使用 ORDER BY 语句。你能利用任意一个属性给你的结果进行排序，包括升序或降序排序。  
+
+	String hql = "FROM Employee E WHERE E.id > 10 ORDER BY E.salary DESC";
+	如果你想要给多个属性进行排序，你只需要在 ORDER BY 语句后面添加你要进行排序的属性即可，并且用逗号进行分割：
+	String hql = "FROM Employee E WHERE E.id > 10 ORDER BY E.firstName DESC, E.salary DESC ";  
+
+**GROUP BY 语句**  
+
+	String hql = "SELECT SUM(E.salary), E.firtName FROM Employee E " +
+             "GROUP BY E.firstName";  
+
+**UPDATE 语句**  
+HQL Hibernate 3 较 HQL Hibernate 2，新增了批量更新功能和选择性删除工作的功能。查询接口包含一个 executeUpdate() 方法，可以执行 HQL 的 UPDATE 或 DELETE 语句。 
+UPDATE 语句能够更新一个或多个对象的一个或多个属性。  
+
+	String hql = "UPDATE Employee set salary = :salary "  + 
+             "WHERE id = :employee_id";
+	Query query = session.createQuery(hql);
+	query.setParameter("salary", 1000);
+	query.setParameter("employee_id", 10);
+	int result = query.executeUpdate();
+	System.out.println("Rows affected: " + result);
+
+**DELETE 语句**   
+
+	String hql = "DELETE FROM Employee "  + 
+             "WHERE id = :employee_id";
+	Query query = session.createQuery(hql);
+	query.setParameter("employee_id", 10);
+	int result = query.executeUpdate();
+	System.out.println("Rows affected: " + result);
+	
+**INSERT 语句**  
+
+	String hql = "INSERT INTO Employee(firstName, lastName, salary)"  + 
+	             "SELECT firstName, lastName, salary FROM old_employee";
+	Query query = session.createQuery(hql);
+	int result = query.executeUpdate();
+	System.out.println("Rows affected: " + result);
+
+**使用分页查询**  
+
+	String hql = "FROM Employee";
+	Query query = session.createQuery(hql);
+	query.setFirstResult(1);  表示结果中的第一行,从 0 行开始。
+	query.setMaxResults(10);  告诉 Hibernate 来检索固定数量个对象
+	List results = query.list();  
+
+## 原生 SQL
+如果你想使用数据库特定的功能如查询提示或 Oracle 中的 CONNECT 关键字的话，你可以使用原生 SQL 数据库来表达查询。Hibernate 3.x 允许您为所有的创建，更新，删除，和加载操作指定手写 SQL ，包括存储过程。  
+您的应用程序会在会话界面用 createSQLQuery() 方法创建一个原生 SQL 查询  
+
+	String sql = "SELECT * FROM EMPLOYEE WHERE id = :employee_id";
+	SQLQuery query = session.createSQLQuery(sql);
+	query.addEntity(Employee.class);
+	query.setParameter("employee_id", 10);
+	List results = query.list();  
+
+## Hibernate 缓存
+https://www.w3cschool.cn/hibernate/xrvi1iee.html  
+
+## 批处理
+使用 Hibernate 将大量的数据上传到你的数据库中  
+
+	Session session = SessionFactory.openSession();
+	Transaction tx = session.beginTransaction();
+	for ( int i=0; i<100000; i++ ) {
+	    Employee employee = new Employee(.....);
+	    session.save(employee);
+	}
+	tx.commit();
+	session.close();
+	//批处理代码
+	Session session = SessionFactory.openSession();
+	Transaction tx = session.beginTransaction();
+	for ( int i=0; i<100000; i++ ) {
+	    Employee employee = new Employee(.....);
+	    session.save(employee);
+	    if( i % 50 == 0 ) { // Same as the JDBC batch size
+	        //flush a batch of inserts and release memory:
+	        session.flush();
+	        session.clear();
+	    }
+	}
+	tx.commit();
+	session.close();
+
+## Hibernate 拦截器
+Hibernate 拦截器给予了我们一个对象如何应用到应用程序和数据库的总控制,在对象持久化或从数据库读取过程中，对数据进行检查。  
+在 Hibernate 中，一个对象将被创建，保存过程中存在不同的状态。
+对象处于生命周期的不同状态下， Interceptor 接口提供了不同阶段能被调用来进行一些所需要的任务的方法。这些方法是从会话到应用程序的回调函数，允许应用程序检查或操作一个持续对象的属性，在它被保存，更新，删除或上传之前。  
+ 
+
+创建一个拦截器你可以直接实现 Interceptor 类或者继承 EmptyInterceptor 类。  
+
+创建拦截器，当 Employee 对象被创建和更新时拦截器的方法将自动被调用。  
+
+	public class MyInterceptor extends EmptyInterceptor {
+	   private int updates;
+	   private int creates;
+	   private int loads;
+	
+	   public void onDelete(Object entity,
+	                     Serializable id,
+	                     Object[] state,
+	                     String[] propertyNames,
+	                     Type[] types) {
+	       // do nothing
+	   }
+	
+	   // This method is called when Employee object gets updated.
+	   public boolean onFlushDirty(Object entity,
+	                     Serializable id,
+	                     Object[] currentState,
+	                     Object[] previousState,
+	                     String[] propertyNames,
+	                     Type[] types) {
+	       if ( entity instanceof Employee ) {
+	          System.out.println("Update Operation");
+	          return true; 
+	       }
+	       return false;
+	   }
+	   public boolean onLoad(Object entity,
+	                    Serializable id,
+	                    Object[] state,
+	                    String[] propertyNames,
+	                    Type[] types) {
+	       // do nothing
+	       return true;
+	   }
+	   // This method is called when Employee object gets created.
+	   public boolean onSave(Object entity,
+	                    Serializable id,
+	                    Object[] state,
+	                    String[] propertyNames,
+	                    Type[] types) {
+	       if ( entity instanceof Employee ) {
+	          System.out.println("Create Operation");
+	          return true; 
+	       }
+	       return false;
+	   }
+	   //called before commit into database
+	   public void preFlush(Iterator iterator) {
+	      System.out.println("preFlush");
+	   }
+	   //called after committed into database
+	   public void postFlush(Iterator iterator) {
+	      System.out.println("postFlush");
+	   }
+	}  
 
 
-Java Persistence API（JPA）
