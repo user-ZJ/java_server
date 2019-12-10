@@ -7,4 +7,8 @@ JNDI：Java 命名和目录界面
 HQL：Hibernate 查询语言  
 POJO：Plain Ordinary Java Object，实际就是普通JavaBeans，是为了避免和EJB混淆所创造的简称  
 ORM：对象关系映射（Object Relational Mapping，简称ORM）是通过使用描述对象和数据库之间映射的元数据，将面向对象语言程序中的对象自动持久化到关系数据库中。  
-JPA：Java Persistence API
+JPA：Java Persistence API  
+IoC：Inversion of Control，即“控制反转”，不是什么技术，而是一种设计思想。  
+DI：Dependency Injection，即“依赖注入”    
+OXM：Object XML Mapping
+JMS：Java Message Service
