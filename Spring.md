@@ -275,7 +275,8 @@ DI 主要有两种变体：
 @Resource注解可以标注在字段或属性的setter方法上，但它默认按名称装配。名称可以通过@Resource的name属性指定，当注解标注在字段上，即默认取字段的名称作为bean名称寻找依赖对象，当注解标注在属性的setter方法上，即默认取属性名作为bean名称寻找依赖对象。
 
 ### 基于构造函数的依赖注入
-通过将@Autowired注解放在构造器上来完成构造器注入，默认构造器参数通过类型自动装配，如下所示：  
+通过将@Autowired注解放在构造器上来完成构造器注入，默认构造器参数通过类型自动装配，如下所示：    
+调用有参数的构造函数，传入默认值。  
 
 	 public class Test1 {  
 	    private MessageInterface message;  
@@ -287,7 +288,8 @@ DI 主要有两种变体：
 	 }
 
 ### 基于接口的依赖注入
-通过将@Autowired注解放在构造器上来完成接口注入。  
+通过将@Autowired注解放在构造器上来完成接口注入。    
+调用无参数的构造函数，再通过接口回调的方式设置属性值。  
 
 	public class Test2 {  
 	    @Autowired //接口注入  
@@ -296,7 +298,8 @@ DI 主要有两种变体：
 	}
 
 ### 基于设值函数的依赖注入
-通过将@Autowired注解放在方法上来完成方法参数注入。  
+通过将@Autowired注解放在方法上来完成方法参数注入。    
+实际是先调用无参数构造函数，再通过set方法设置属性值。
 
 	public class Test3 {  
 	    private MessageInterface message;  
@@ -322,6 +325,59 @@ DI 主要有两种变体：
 	} 
 
 
+## Beans 自动装配
+在Spring使用中，我们在xml配置文件通过元素或元素的ref属性向bean注入另外的依赖bean。
+如果使用自动装配(autowiring) ，就可以减少甚至消除配置元素和元素。   
+设置元素的autowire属性就可以设定bean的自动装配模式。   
+自动装配有5种模式:  
+1. no:默认设置，不使用自动装配，对于大规模系统，推荐使用，明确的指定依赖易于控制。  
+2. byName:通过属性名自动装配，Spring容器看到在XML配置文件中 bean 的自动装配的属性设置为 byName。然后尝试匹配，并且将它的属性名与在配置文件中被定义为相同名称（id属性）的bean进行连接。   
+3. byType:由属性数据类型自动装配。Spring 容器看到在 XML 配置文件中 bean 的自动装配的属性设置为 byType。然后如果它的类型匹配配置文件中的一个确切的 bean 名称，它将尝试匹配和连接属性的类型。如果存在不止一个这样的 bean，则抛出一个致命的异常。  
+4. constructor:类似于 byType，但该类型适用于构造函数参数类型。如果在容器中不存在与构造函数参数类型相同的bean，则抛出异常。  
+5. autodetect：Spring首先尝试通过 constructor 使用自动装配来连接，找不到，Spring 尝试通过 byType 来自动装配。  
+
+### 在xml中使用自动装配
+	<!-- user bean的属性account的值是一个定义好的Bean，在属性中通过ref引用其id(ac_100)实现注入 -->
+	<bean id="ac_100" class="twm.demo.Account"/>
+	<bean id="user" class="twm.demo.User">
+	  <property name="username" value="Yanglan"/>
+	  <property name="account" ref="ac_100"/>
+	</bean>
+	
+	<!--以下是使用自动装配，假设这里定义的id为account-->
+	<!--把该Bean的id改成了与引用它的Bean属性相同的名字(id=”account”)，然后使用byName的方式来自动装配，对user bean来说省略配置一个元素-->
+	<bean id="account" class="twm.demo.Account"/>
+	<bean id="user" class="twm.demo.User" autowire="byName">
+	  <property name="username" value="Yanglan"/>
+	</bean>
+
+	<!--把autowire属性值改为byType后，在注入account属性时，并不关心bean id了，而是查找容器中是否有类型为twm.demo.Account的bean
+	但是如果有多个bean的类型都匹配的情况，那么就会出错，因为byType方式只允许匹配一个类型相同的Bean-->
+	<bean id="ac_anyname" class="twm.demo.Account"/>
+	<bean id="user" class="twm.demo.User" autowire="byType">
+	  <property name="username" value="Yanglan"/>
+	</bean>
+
+	<!--默认自动装配
+	在元素中添加一个default-autowire属性，该配置文件当中的所有bean将会进行自动装配，如果有特定的bean需要使用其他的方式，
+	在该bean上直接设置autowire属性就可以了，会覆盖掉默认自动装配的配置-->
+	<beans ... default-autowire="byType">
+	</beans>
+
+### 使用注解自动装配
+在使用注解装配之前，首先要开启注解装配的方式，在配置文件中加上下面这句话  
+	
+	<!--1.启动Spring注解-->
+    <context:annotation-config/>
+    <!--2.扫描注解-->
+    <context:component-scan base-package="com.demo"/>
+
+自动装配使用一下几个注解：  
+@Autowired注解，用于setter方法，构造函数，直接注解在属性(最常用)  
+@Qualifier注解，如果在容器中出现了两个适合的bean，就会出错。怎么解决呢？这个时候可以使用@Qualifier注解指定一个Bean来装配，这样就不会报异常了。@Qualifier注解采用的是byName的方式。   
+@Value注解，自动装配基本类型的或者是字面值常量的参数，可以使用表达式来动态的计算并装配属性的值    
+
+
 ## 基于注解的配置  
 从 Spring 2.5 开始就可以使用注解来配置依赖注入。而不是采用 XML 来描述一个 bean 关联关系，你可以使用相关类，方法或字段声明的注解，将 bean 配置移动到组件类本身。      
 如果你想在 Spring 应用程序中使用的任何注解，在配置文件中加入：  
@@ -331,9 +387,149 @@ DI 主要有两种变体：
 ### @Required 注解
 @Required 注释应用于 bean 属性的 setter 方法，它表明受影响的 bean 属性在配置时必须放在 XML 配置文件中，否则容器就会抛出一个 BeanInitializationException 异常。  
 
-### @Autowired 注释
+### @Autowired 注解
+@Autowired用于设置bean自动装配  
+@Autowired注解可以用在任何方法上，不一定非得是setter方法，只要方法有需要自动装配的参数都可以，但是一般都是使用在setter方法和构造器上的。  
+@Autowired注解默认使用的是byType的方式向Bean里面注入相应的Bean。    
+使用@Autowired自动装配时，容器中只能有一个适合的Bean待选，否则的话，spring会抛出异常。(因为@Autowired默认是使用byType的方式装配) 如果在应用上下文当中找不到相应的bean去自动装配，那么spring也会抛出异常（NoSuchBeanDefinitionException）。  
+如果想避免这种情况发生，而且需要装配的属性也不是必须要装配的话，可以使用如下代码来使用注解：   
 
+	@Autowired(required=false)
+	private Instrument instrument; 
+	
+### @Qualifier注解
+如果在容器中出现了两个适合的bean，就会出错。怎么解决呢？这个时候可以使用@Qualifier注解指定一个Bean来装配，这样就不会报异常了。@Qualifier注解采用的是byName的方式。括号中的字符串标注的是需要自动装配进来的Bean的id 在注解注入中使用表达式     
 
+	@Autowired
+	@Qualifier("CellPhoneNotifyserviceImpl")
+	private NotifyService notifyservice;  
+
+### @Value注解 
+在使用注解自动装配的过程当中，如果想要自动装配基本类型的或者是字面值常量的参数的话，可以是用@Value注解  
+
+	@Value("Messi")
+	private String username;
+
+上例为一个String类型的属性装配了一个String类型的值，同样可以装配int，boolean等基本类型的属性。  
+在@Value注解中，还可以使用表达式来动态的计算并装配属性的值。(经常用来从properties文件中获取值)比如使用spel表达式从某个对象属性中取得一个值()  
+
+	@Value("#{systemConfig.UploadPath}")
+	private String savePath;
+
+为了简化从properties里取配置，可以使用@Value, 可以properties文件中的配置值。在再xml配置文件里引入properties文件，即使给变量赋了初值也会**以配置文件的值为准**。
+
+	<context:property-placeholder location="classpath:test.properties" />
+
+### @Configuration
+该类等价 与XML中配置beans，相当于Ioc容器，它的某个方法头上如果注册了@Bean，就会作为这个Spring容器中的Bean，与xml中配置的bean意思一样。    
+
+### @Controller, @Service, @Repository,@Component
+4种注解意思是一样，并没有什么区别，区别只是名字不同。  
+在类上写注解  
+
+### @PostConstruct 和 @PreDestory   
+实现初始化和销毁bean之前进行的操作，只能有一个方法可以用此注释进行注释，方法不能有参数，返回值必需是void,方法需要是非静态的。  
+
+### @Primary
+自动装配时当出现多个Bean候选者时，被注解为@Primary的Bean将作为首选者，否则将抛出异常。  
+
+### @Lazy(true)
+用于指定该Bean是否取消预初始化，用于注解类，延迟初始化。  
+
+### @Resource
+默认按 byName自动注入,如果找不到再按byType找bean,如果还是找不到则抛异常，  
+可以手动指定bean,它有2个属性分别是name和type，使用name属性，则使用byName的自动注入，而使用type属性时则使用byType自动注入。  
+
+### @Async
+基于@Async标注的方法，称之为异步方法,这个注解用于标注某个方法或某个类里面的所有方法都是需要异步处理的。被注解的方法被调用的时候，会在新线程中执行，而调用它的方法会在原来的线程中执行  
+xml配置：
+
+	<!--扫描注解，其中包括@Async -->
+	<context:component-scan base-package="com.test"/>
+	<!-- 支持异步方法执行, 指定一个缺省的executor给@Async使用-->
+	<task:annotation-driven executor="defaultAsyncExecutor"  /> 
+	<!—配置一个线程执行器-->
+	<task:executor id=" defaultAsyncExecutor "pool-size="100-10000" queue-capacity="10" keep-alive =”5”/>  
+
+### @Named
+@Named和Spring的@Component功能相同。@Named可以有值，如果没有值生成的Bean名称默认和类名相同。  
+
+### @Inject  
+使用@Inject需要引用javax.inject.jar，它与Spring没有关系，是jsr330规范。   
+与@Autowired有互换性。  
+
+### @Singleton
+只要在类上加上这个注解，就可以实现一个单例类，不需要自己手动编写单例实现类。   
+
+### @Valid,@Valided
+1.@Valid必需使用在以@RequestBody接收参数的情况下。  
+2.使用ajax以POST方式提示数据，禁止用Fiddler以及浏览器直接访问的方式测试接口  
+3.用<mvc:annotation-driven />添加注解驱动。  
+4.@Valid是应用在javabean上的校验。  
+5.@Valid下后面紧跟BindingResult result，验证结果保存在result  
+
+### @RequestBody
+@RequestBody（required=true）:有个默认属性required,默认是true,当body里没内容时抛异常。
+application/x-www-form-urlencoded：窗体数据被编码为名称/值对。这是标准的编码格式。这是默认的方式  
+multipart/form-data：窗体数据被编码为一条消息，页上的每个控件对应消息中的一个部分。二进制数据传输方式，主要用于上传文件  
+必需使用POST方式提交参数  
+
+### @CrossOrigin
+是Cross-Origin ResourceSharing（跨域资源共享）的简写，作用是解决跨域访问的问题，在Spring4.2以上的版本可直接使用。在类上或方法上添加该注解  
+
+### @RequestParam
+提取和解析请求中的参数。@RequestParam支持类型转换，类型转换目前支持所有的基本Java类型  
+@RequestParam([value=”number”], [required=false])  String number   
+
+### @PathVariable
+处理requet uri部分,当使用@RequestMapping URI template 样式映射时， 即someUrl/{paramId}, 这时的paramId可通过 @Pathvariable注解绑定它传过来的值到方法的参数上  
+
+### @RequestHeader，@CookieValue  
+处理request header部分的注解，将头部信息绑定到方法参数上  
+
+### @RequestParam,  @RequestBody
+处理request body部分的注解  
+
+### @Scope
+配置bean的作用域  
+默认是单例模式，即@Scope(“singleton”),  
+singleton：单例，即容器里只有一个实例对象。  
+prototype：多对象，每一次请求都会产生一个新的bean实例  
+
+### @ResponseStatus
+@ResponseStatus用于修饰一个类或者一个方法，修饰一个类的时候，一般修饰的是一个异常类,当处理器的方法被调用时，@ResponseStatus指定的code和reason会被返回给前端。value属性是http状态码，比如404，500等。reason是错误信息  
+当修改类或方法时，只要该类得到调用，那么value和reason都会被添加到response里  
+
+### @RestController
+@RestController = @Controller + @ResponseBody。  
+是2个注解的合并效果，即指定了该controller是组件，又指定方法返回的是String或json类型数据，不会解决成jsp页面，注定不够灵活，如果一个Controller即有SpringMVC返回视图的方法，又有返回json数据的方法即使用@RestController太死板。  
+灵活的作法是：定义controller的时候，直接使用@Controller，如果需要返回json可以直接在方法中添加@ResponseBody   
+
+### @ControllerAdvice  
+把@ControllerAdvice注解内部使用@ExceptionHandler、@InitBinder、@ModelAttribute注解的方法应用到所有的 @RequestMapping注解的方法。非常简单，不过只有当使用@ExceptionHandler最有用，另外两个用处不大。   
+
+### 元注解 @Retention @Target @Document @Inherited  
+元注解是指注解的注解  
+@Retention(RetentionPolicy.SOURCE)   //注解仅存在于源码中，在class字节码文件中不包含  
+@Retention(RetentionPolicy.CLASS)     //默认的保留策略，注解会在class字节码文件中存在，但运行时无法获得，  
+@Retention(RetentionPolicy.RUNTIME)  //注解会在class字节码文件中存在，在运行时可以通过反射获取到  
+@Target(ElementType.TYPE)   //接口、类、枚举、注解   
+@Target(ElementType.FIELD) //字段、枚举的常量  
+@Target(ElementType.METHOD) //方法  
+@Target(ElementType.PARAMETER) //方法参数  
+@Target(ElementType.CONSTRUCTOR)  //构造函数  
+@Target(ElementType.LOCAL_VARIABLE)//局部变量  
+@Target(ElementType.ANNOTATION_TYPE)//注解  
+@Target(ElementType.PACKAGE) ///包     
+@Document：说明该注解将被包含在javadoc中  
+@Inherited：说明子类可以继承父类中的该注解  
+
+### @RequestMapping
+处理映射请求的注解。用于类上，表示类中的所有响应请求的方法都是以该地址作为父路径。   
+
+### @GetMapping和@PostMapping
+@GetMapping(value = “page”)等价于@RequestMapping(value = “page”, method = RequestMethod.GET)    
+@PostMapping(value = “page”)等价于@RequestMapping(value = “page”, method = RequestMethod.POST)    
 
 
 
@@ -343,5 +539,7 @@ DI 主要有两种变体：
 # 参考
 IoC/DI: 
 https://www.cnblogs.com/jhli/p/6019895.html  
-https://www.cnblogs.com/sunzhao/p/8334008.html
+https://www.cnblogs.com/sunzhao/p/8334008.html  
+注解：  
+https://blog.csdn.net/weixin_39805338/article/details/80770472  
 
