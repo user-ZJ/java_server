@@ -187,7 +187,7 @@ DI 主要有两种变体：
 	    private MessageInterface message;  
 	    @Autowired //构造器注入  
 	    private Test1(MessageInterface message) {  
-	        this.message = message;  
+	        this.message = message;    
 	    } 
 	    //省略getter和setter  
 	 }
