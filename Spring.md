@@ -95,7 +95,101 @@ bean 是一个被实例化，组装，并通过 Spring IoC 容器所管理的对
 Spring IoC 容器完全由实际编写的配置元数据的格式解耦。有下面三种方法把配置元数据提供给 Spring 容器：  
 * 基于 XML 的配置文件  
 * 基于注解的配置  
-* 基于 Java 的配置  
+* 基于 Java 的配置    
+
+### 基于 XML 的配置文件  
+	<!--User 类通过构造函数实例化-->
+	<bean id="user01" class="com.hs.model.User">
+	   <!--index=""(可以省略)是设置参数的索引(0开始)，是第几个 type可以不用写
+	        name就是构造函数的参数值，value就是赋的值
+		-->
+	   <!--翻译constructor：构造函数-->
+	   <constructor-arg name="user_id" value="100" index="0" type="java.lang.Integer"/>
+	   <constructor-arg name="user_name" index="1">
+	      <value>悟空</value>  <!--上面是简写-->
+	      <!--设置空是<null/>-->
+	   </constructor-arg>
+	</bean>
+
+
+
+	<!--构造函数实例化数组，list，set-->
+	<bean id="user02" class="com.hs.model.User">
+	   <constructor-arg name="user_name" value="八戒" index="0"/>
+	   <constructor-arg name="user_id" value="200" index="1"/>
+	   <constructor-arg name="hobbyArray" index="2">
+	      <array>
+	         <value>篮球</value>
+	         <value>足球</value>
+	         <value>看书</value>
+	         <value>音乐</value>
+	      </array>
+	   </constructor-arg>
+	   <constructor-arg name="hobbyList">
+	      <list>
+	         <value>篮球</value>
+	         <value>足球</value>
+	         <value>看书</value>
+	         <value>音乐</value>
+	      </list>
+	   </constructor-arg>
+	   <constructor-arg name="hobbySet">
+	      <set>
+	         <value>篮球</value>
+	         <value>足球</value>
+	         <value>看书</value>
+	         <value>音乐</value>
+	      </set>
+	   </constructor-arg>
+	</bean>    
+
+
+	<!--构造函数实例化Map，Properties-->
+	<bean id="user03" class="com.hs.model.User">
+	   <constructor-arg name="map">
+	      <map>
+	         <entry key="hs">
+	            <value>和尚</value>
+	         </entry>
+	         <!--缩写-->
+	         <entry key="name" value="悟空"/>
+	      </map>
+	   </constructor-arg>
+	   <constructor-arg name="properties">
+	      <props>
+	         <!--给Properties赋值-->
+	         <prop key="age">100</prop>
+	         <prop key="RuntimeExceiption">error</prop>
+	      </props>
+	   </constructor-arg>
+	</bean>
+
+
+	<!--构造函数初始化自定义类型-->
+	<bean id="user04" class="com.hs.model.User">
+	   <constructor-arg name="hsRole">
+	      <bean id="role1" class="com.hs.model.Role"/>
+	   </constructor-arg>
+	</bean>
+	
+	
+	<!--构造函数实例化自定义类型-->
+	<bean id="user05" class="com.hs.model.User">
+	   <constructor-arg name="hsRole">
+	      <bean class="com.hs.model.Role">
+	         <constructor-arg name="role_name" value="超级管理员"/>
+	      </bean>
+	   </constructor-arg>
+	</bean>
+
+	<!--构造函数实例化自定义类型——推荐引用方式-->
+	<bean id="user06" class="com.hs.model.User">
+	   <constructor-arg name="hsRole" ref="role2"/>
+	</bean>
+	<bean id="role2" class="com.hs.model.Role">
+	   <constructor-arg name="role_name" value="引用方式推荐"/>
+	</bean>  
+
 
 ## 控制反转(IoC) 
 IOC是Inversion of Control的缩写。  
