@@ -1,6 +1,6 @@
 JDBC：Java Database Connectivity 
 MVC：Model View Controller，是模型(model)－视图(view)－控制器(controller)的缩写，一种软件设计典范，用一种业务逻辑、数据、界面显示分离的方法组织代码，将业务逻辑聚集到一个部件里面，在改进和个性化定制界面及用户交互的同时，不需要重新编写业务逻辑。
-RDBMSs：关系数据库管理系统
+RDBMSs：Relational Database Management System,关系数据库管理系统
 CRUD：增加(Create)、读取(Retrieve)、更新(Update)和删除(Delete)
 JTA：Java 事务 API
 JNDI：Java 命名和目录界面  
@@ -12,3 +12,8 @@ IoC：Inversion of Control，即“控制反转”，不是什么技术，而是
 DI：Dependency Injection，即“依赖注入”    
 OXM：Object XML Mapping
 JMS：Java Message Service
+AOP：Aspect-oriented programming  面向方面的编程/横切面编程  
+OOP：面向对象的程序设计
+POP：面向过程程序设计
+AspectJ：实际上是对AOP编程思想的一个Java实践   
+EJB:企业级JavaBean（Enterprise JavaBean）
