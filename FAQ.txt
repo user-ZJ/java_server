@@ -4,4 +4,9 @@ https://blog.csdn.net/yyx3214/article/details/79428582
 2. The server time zone value 'XXX' is unrecognized or represents more than one time zone.   
 加上serverTimezone=GMT，如果需要使用gmt+8时区，需要写成GMT%2B8，否则会被解析为空
 将jdbc.url = jdbc:mysql://127.0.0.1:3306/db?useUnicode=true&characterEncoding=utf8
-改为jdbc.url = jdbc:mysql://127.0.0.1:3306/db?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT
+改为jdbc.url = jdbc:mysql://127.0.0.1:3306/db?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT  
+
+3.hibernate连接数据库报错
+ERROR: Could not create connection to database server.
+Exception in thread "main" org.springframework.transaction.CannotCreateTransactionException: Could not open Hibernate Session for transaction; nested exception is org.hibernate.exception.JDBCConnectionException: Could not open connection
+原因为mysql-connector-java 5.1.31 版本较低，将mysql-connector-java版本升级为8.0.18，驱动改为com.mysql.cj.jdbc.Driver

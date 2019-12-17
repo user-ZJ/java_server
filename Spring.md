@@ -421,10 +421,68 @@ DI 主要有两种变体：
 
 	<context:property-placeholder location="classpath:test.properties" />
 
+### @Id
+
+数据库主键  
+
+### @GeneratedValue
+
+@GeneratedValue注解存在的意义主要就是为一个实体生成一个唯一标识的主键(JPA要求每一个实体Entity,必须有且只有一个主键),@GeneratedValue提供了主键的生成策略。  
+
+@GeneratedValue注解有两个属性,分别是strategy和generator,其中generator属性的值是一个字符串,默认为"",其声明了主键生成器的名称(对应于同名的主键生成器@SequenceGenerator和@TableGenerator)   
+
+JPA为开发人员提供了四种主键生成策略,其被定义在枚举类GenerationType中,包括  
+
+GenerationType.TABLE,
+
+GenerationType.SEQUENCE,
+
+GenerationType.IDENTITY,主键自增长   
+
+GenerationType.AUTO,在以上三种主键生成策略中选择其中一种
+
+### @Column
+
+数据库列名
+
+```java
+@Column(name = "JOINING_DATE", nullable = false)
+```
+
+### @Type
+
+定义数据类型
+
+```java
+@Column(name = "JOINING_DATE", nullable = false)@Type(type="org.jadira.usertype.dateandtime.joda.PersistentLocalDate")private LocalDate joiningDate;
+```
+
 ### @Configuration
+
 该类等价 与XML中配置beans，相当于Ioc容器，它的某个方法头上如果注册了@Bean，就会作为这个Spring容器中的Bean，与xml中配置的bean意思一样。    
 
+### @EnableTransactionManagement
+
+is equivalent to Spring’s tx:* XML namespace, enabling Spring’s annotation-driven transaction management capability.
+
+### @ComponentScan
+
+```java
+@ComponentScan({"com.demo.configuration"})
+```
+
+is equivalent to `context:component-scan base-package="..."` in xml, providing with where to look for spring managed beans/classes.  
+
+### @PropertySource
+
+```java
+@PropertySource({"classpath:application.properties"})
+```
+
+is used to declare a set of properties(defined in a properties file in application classpath) in Spring run-time `Environment`, providing flexibility to have different values in different application environments.
+
 ### @Controller, @Service, @Repository,@Component
+
 4种注解意思是一样，并没有什么区别，区别只是名字不同。  
 在类上写注解  
 
@@ -507,7 +565,7 @@ prototype：多对象，每一次请求都会产生一个新的bean实例
 灵活的作法是：定义controller的时候，直接使用@Controller，如果需要返回json可以直接在方法中添加@ResponseBody   
 
 ### @ControllerAdvice  
-把@ControllerAdvice注解内部使用@ExceptionHandler、@InitBinder、@ModelAttribute注解的方法应用到所有的 @RequestMapping注解的方法。非常简单，不过只有当使用@ExceptionHandler最有用，另外两个用处不大。   
+把@ControllerAdvice注解内部使用@ExceptionHandler、@InitBinder、@ModelAttribute注解的方法应用到所有的 @RequestMapping注解的方法。非常简单，不过只有当使用@ExceptionHandler最有用，另外两个用处不大。     
 
 ### 元注解 @Retention @Target @Document @Inherited  
 元注解是指注解的注解  
@@ -1050,6 +1108,84 @@ ISOLATION_SERIALIZABLE：最高的隔离级别，完全服从ACID的隔离级别
 
 **声明式事务处理**：管理建立在AOP(切面编程)之上的。其本质是对方法前后进行拦截，然后在目标方法开始之前创建或者加入一个事务，在执行完目标方法之后根据执行情况提交或者回滚事务。声明式事务最大的优点就是不需要通过编程的方式管理事务，这样就不需要在业务逻辑代码中掺杂事务管理的代码，只需在配置文件中做相关的事务规则声明(或通过基于@Transactional注解的方式)，便可以将事务规则应用到业务逻辑中。  
 
+#### 编程式事务处理
+
+bean配置：  
+
+```xml
+<!-- 创建模板 -->
+
+<bean id="transactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+    <property name="transactionManager" ref="txManager"></property>
+</bean>
+<!-- 配置事务管理器 ,管理器需要事务，事务从Connection获得，连接从连接池DataSource获得 -->
+<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+</bean>
+<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+    <property name="driverClass" value="com.mysql.jdbc.Driver"></property>
+    <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/test"></property>
+    <property name="user" value="root"></property>
+    <property name="password" value="root"></property>
+</bean>
+```
+
+service配置：  
+
+```java
+//注入事务管理模板
+private TransactionTemplate transactionTemplate;
+//使用事务
+@Override
+public void transfer(final String outer,final String inner,final int money) {
+     transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+     @Override
+     protected void doInTransactionWithoutResult(TransactionStatus arg0) {
+         accountDao.out(outer, money);
+         //int i = 1/0;
+         accountDao.in(inner, money);
+     }
+ });
+}
+```
+
+#### 声明式事务管理
+
+在applicationContext.xml 配置事务管理器，将并事务管理器交予spring：  
+
+```xml
+<!-- 1 事务管理器 -->
+<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!-- 2 将管理器交予spring
+        * transaction-manager 配置事务管理器
+        * proxy-target-class
+          true ： 底层强制使用cglib 代理
+    -->
+<tx:annotation-driven transaction-manager="txManager" proxy-target-class="true"/>
+```
+
+在目标类或目标方法添加注解即可 @Transactional:  
+
+```java
+@Transactional(propagation=Propagation.REQUIRED , isolation = Isolation.DEFAULT)
+@Service("accountService")  
+public class AccountServiceImpl implements AccountService{  
+    @Resource(name="accountDao")
+    private AccountDao accountDao;
+    public void setAccountDao(AccountDao accountDao) {
+        this.accountDao = accountDao;
+    }
+    @Override
+    public void transfer(String outer, String inner, int money) {
+        accountDao.out(outer, money);
+        //int i = 1/0;
+        accountDao.in(inner, money);
+    }
+}
+```
+
 
 
 
@@ -1087,4 +1223,6 @@ https://blog.csdn.net/small_to_large/article/details/77586765
 AOP  
 
 https://www.jianshu.com/p/994027425b44
+
+
 
