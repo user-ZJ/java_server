@@ -1226,3 +1226,6 @@ https://www.jianshu.com/p/994027425b44
 
 
 
+示例：
+
+http://websystique.com/spring/spring4-hibernate4-mysql-maven-integration-example-using-annotations/

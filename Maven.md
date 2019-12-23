@@ -93,7 +93,7 @@ Maven 中央仓库是由 Maven 社区提供的仓库，其中包含了大量常�
 	      </repository>
 	   </repositories>
 	</project>
-	
+
 ### Maven 依赖搜索顺序
 当我们执行 Maven 构建命令时，Maven 开始按照以下顺序查找依赖的库:  
 1. 在本地仓库中搜索
@@ -137,7 +137,8 @@ maven install可以把指定的文件安装到本地maven仓库，有三种insta
 
 
 	指定jar包、groupid、artifactId和version，maven会自动生成相应的pom.xml文件。  
-	mvn install:install-file -Dfile=<path-to-file> -DgroupId=<group-id> -DartifactId=<artifact-id> -Dversion=<version> -Dpackaging=<packaging>      
+	mvn install:install-file -Dfile=<path-to-file> -DgroupId=<group-id> -DartifactId=<artifact-id> -Dversion=<version> -Dpackaging=<packaging>    
+	mvn install:install-file -Dfile=E:\project\idea\hellospringmvc\lib\spring-web-4.3.18.RELEASE.jar -DgroupId=org.springframework -DartifactId=spring-web -Dversion=4.3.18.RELEASE -Dpackaging=jar  
 	如果jar包是用maven打包生成的，可以直接指定jar包和pom.xml文件  
 	mvn install:install-file -Dfile=<path-to-file> -DpomFile=<path-to-pomfile>  
 	如果jar包是用maven打包生成的，maven 2.5版本会自动根据jar包生成pom.xml文件  
@@ -151,16 +152,16 @@ maven install可以把指定的文件安装到本地maven仓库，有三种insta
 
 
 	<repositories>
-        <repository>
-            <id>localrepository</id>
-            <url>file://${basedir}/repo</url>
-        </repository>
-    </repositories>
-
-    <dependency>
-        <groupId>nlp</groupId>
-        <artifactId>localjar</artifactId>
-        <version>1.0.0</version>
-    </dependency>
+	    <repository>
+	        <id>localrepository</id>
+	        <url>file://${basedir}/repo</url>
+	    </repository>
+	</repositories>
+	
+	<dependency>
+	    <groupId>nlp</groupId>
+	    <artifactId>localjar</artifactId>
+	    <version>1.0.0</version>
+	</dependency>
 
 
