@@ -9,7 +9,7 @@ Spring Web MVC是一种基于Java的实现了Web MVC设计模式的请求驱动�
 MVC 设计模式代表 Model-View-Controller（模型-视图-控制器） 模式。这种模式用于应用程序的分层开发。  
 
 - **Model（模型）** - 模型代表一个存取数据的对象或 JAVA POJO。它也可以带有逻辑，在数据变化时更新控制器。  
-- **View（视图）** - 视图代表模型包含的数据的可视化。  
+- **View（视图）** - 视图代表**模型**包含的数据的可视化。  
 - **Controller（控制器）** - 控制器作用于模型和视图上。它控制数据流向模型对象，并在数据变化时更新视图。它使视图与模型分离开。  
 
 ## Spring MVC框架优点
@@ -86,9 +86,7 @@ Spring MVC 是 Spring 产品组合的一部分，它享有 Spring IoC容器紧�
 
 与许多其他web框架一样，Spring MVC也是围绕前端控制器模式设计的，其中一个中央Servlet DispatcherServlet提供了一个用于请求处理的共享算法，而实际工作是由可配置的委托组件执行的。该模型灵活，支持多种工作流程。  
 
-DispatcherServlet 的任务就是拦截请求发送给 Spring MVC 控制器。  
-
-
+DispatcherServlet 的任务就是拦截请求发送给 Spring MVC Controller。    
 
 与其他Servlet一样，DispatcherServlet需要使用Java配置或web.xml根据Servlet规范声明和映射。然后，DispatcherServlet使用Spring配置来发现请求映射、视图解析、异常处理等所需的委托组件。  
 
@@ -96,7 +94,7 @@ DispatcherServlet 的任务就是拦截请求发送给 Spring MVC 控制器。
 
 应用程序中可能会有多个控制器，DispatcherServlet 会查询一个或多个处理器映射来确定请求的下一站在哪里，处理器映射会根据请求所携带的 URL 信息来进行决策  
 
-## Controller
+## Controller（控制器）
 
 一旦选择了合适的控制器， DispatcherServlet 会将请求发送给选中的控制器，到了控制器，请求会卸下其负载（用户提交的请求）等待控制器处理完这些信息   
 
@@ -104,17 +102,21 @@ DispatcherServlet 的任务就是拦截请求发送给 Spring MVC 控制器。
 
 当控制器在完成逻辑处理后，通常会产生一些信息，这些信息就是需要返回给用户并在浏览器上显示的信息，它们被称为**模型（Model）**     
 
-## View Resolver
+## View Resolver（视图解析器）
 
+控制器就不会和特定的视图相耦合，传递给 DispatcherServlet 的视图名并不直接表示某个特定的 JSP。（实际上，它甚至不能确定视图就是 JSP）相反，**它传递的仅仅是一个逻辑名称，这个名称将会用来查找产生结果的真正视图。**
 
+DispatcherServlet 将会使用视图解析器（view resolver）来将逻辑视图名匹配为一个特定的视图实现，它可能是也可能不是 JSP
 
 ## View
 
-仅仅返回原始的信息是不够的——这些信息需要以用户友好的方式进行格式化，一般会是 HTML，所以，信息需要发送给一个**视图（view）**，通常会是 JSP。  
-
-## View Resolver
+仅仅返回原始的信息是不够的——这些信息需要以用户友好的方式进行格式化，一般会是 HTML，所以，信息需要发送给一个**视图（view）**，通常会是 JSP。    
 
 
+
+## @EnableWebMvc
+
+将@EnableWebMvc添加给@Configuration类来导入SpringMvc的配置
 
 
 

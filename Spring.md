@@ -471,7 +471,7 @@ is equivalent to Spring’s tx:* XML namespace, enabling Spring’s annotation-d
 @ComponentScan({"com.demo.configuration"})
 ```
 
-is equivalent to `context:component-scan base-package="..."` in xml, providing with where to look for spring managed beans/classes.  
+包扫描路径，等效于xml配置文件中的 `context:component-scan base-package="..."` , 配置在哪个包里去找 spring beans/classes的注解配置.  
 
 ### @PropertySource
 
