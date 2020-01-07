@@ -118,6 +118,201 @@ DispatcherServlet 将会使用视图解析器（view resolver）来将逻辑视�
 
 将@EnableWebMvc添加给@Configuration类来导入SpringMvc的配置
 
+## 示例：Hello Spring MVC
+
+源码路径：源码\011springmvc_hello
+
+### 1. 新建maven项目
+
+新建名为SpringMvcHello的maven项目，在pom.xml添加依赖的jar包：  
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.demo</groupId>
+    <artifactId>springmvc_hello</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+    <name>SpringMvcHello</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <springframework.version>4.0.6.RELEASE</springframework.version><!--4.0.6.RELEASE;4.3.18.RELEASE;5.2.1.RELEASE-->
+        <hibernate.version>4.3.6.Final</hibernate.version> <!--4.3.6.Final;5.2.10.Final-->
+        <mysql.connector.version>8.0.18</mysql.connector.version>
+        <joda-time.version>2.3</joda-time.version>
+        <testng.version>6.9.4</testng.version>
+        <mockito.version>1.10.19</mockito.version>
+        <h2.version>1.4.187</h2.version>
+        <dbunit.version>2.2</dbunit.version>
+    </properties>
+
+    <dependencies>
+        <!-- Spring -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${springframework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${springframework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${springframework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${springframework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${springframework.version}</version>
+        </dependency>
+        <!-- Servlet+JSP+JSTL -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>javax.servlet.jsp-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>2.4</version>
+                    <configuration>
+                        <warSourceDirectory>src/main/webapp</warSourceDirectory>
+                        <warName>SpringMvcHello</warName>
+                        <failOnMissingWebXml>true</failOnMissingWebXml>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <finalName>SpringMvcHello</finalName>
+    </build>
+</project>
+```
+
+### 2.配置web.xml
+
+创建src\main\webapp\WEB-INF目录，在WEB-INF目录下创建 web.xml，
+
+配置Spring MVC的入口 **DispatcherServlet**，把所有的请求都提交到该Servlet  
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+    <servlet>
+        <servlet-name>springmvc</servlet-name>
+        <servlet-class>
+            org.springframework.web.servlet.DispatcherServlet
+        </servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>springmvc</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+</web-app>
+```
+
+**注意：**<servlet-name>springmvc</servlet-name>中springmvc这个名字在下一步会用到，用于指定springmvc-servlet.xml文件名
+
+### 3.配置springmvc-servlet.xml
+
+在WEB-INF目录下创建 springmvc-servlet.xml，springmvc-servlet.xml 与上一步中的springmvc对应  
+
+是Spring MVC的 映射配置文件    
+
+表示访问路径**/index**会交给id=indexController的bean处理  
+id=indexController的bean配置为类：**IndexController**    
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+    <bean id="simpleUrlHandlerMapping"
+          class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <props>
+                <prop key="/index">indexController</prop>
+            </props>
+        </property>
+    </bean>
+    <bean id="indexController" class="controller.IndexController"></bean>
+</beans>
+```
+
+### 4.编写控制类 IndexController
+
+控制类 IndexController实现接口Controller ，提供方法handleRequest处理请求  
+
+SpringMVC通过 ModelAndView 对象把模型和视图结合在一起  
+
+```java
+package controller;
+
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.Controller;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class IndexController implements Controller {
+    @Override
+    public ModelAndView handleRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
+        ModelAndView mav = new ModelAndView("index.jsp");
+        mav.addObject("message", "Hello Spring MVC");
+        return mav;
+    }
+}
+```
+
+### 5.准备index.jsp
+
+在src\main\webapp目录下创建index.jsp
+
+```jsp
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+         pageEncoding="UTF-8" isELIgnored="false"%>
+<h1>${message}</h1>
+```
+
+### 6.编译运行
+
+使用maven clean package命令编译打包，将SpringMvcHello.war包发布到tomcat,
+
+访问http://localhost:8080/SpringMvcHello/index  
+
+![](images/springmvc_3.png)  
+
+
 
 
 
@@ -128,5 +323,5 @@ https://www.yiibai.com/spring_mvc/
 
 http://websystique.com/springmvc/spring-4-mvc-and-hibernate4-integration-example-using-annotations/  
 
-
+https://how2j.cn/k/springmvc/springmvc-springmvc/615.html   
 
