@@ -312,6 +312,121 @@ public class IndexController implements Controller {
 
 ![](images/springmvc_3.png)  
 
+1. 用户访问 /index
+2. 根据web.xml中的配置 所有的访问都会经过DispatcherServlet
+3. 根据 根据配置文件springmvc-servlet.xml ，访问路径/index会进入IndexController类
+4. 在IndexController中指定跳转到页面index.jsp，并传递message数据
+5. 在index.jsp中显示message信息
+
+## 视图定位
+
+修改springmvc-servlet.xml ,增加以下内容，指定jsp位置    
+
+```xml
+<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+   <property name="prefix" value="/WEB-INF/page/" />
+   <property name="suffix" value=".jsp" />
+</bean>
+```
+
+其作用是把视图约定在 **/WEB-INF/page/\*.jsp** 这个位置  
+
+把IndexController类的加载视图的代码做如下修改：  
+
+```java
+ModelAndView mav = new ModelAndView("index.jsp");
+//修改为
+ModelAndView mav = new ModelAndView("index");
+```
+
+## 修改web.xml中servlet配置重定向
+
+修改web.xml，将WEB-INF/springmvc-servlet.xml移动为resources/spring/spring-mvc-servlet.xml   
+
+```xml
+<servlet>
+        <servlet-name>springmvc</servlet-name>
+        <servlet-class>
+            org.springframework.web.servlet.DispatcherServlet
+        </servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath*:spring/spring-mvc*.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>springmvc</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+```
+
+## 注解方式
+
+### 1. 修改springmvc-servlet.xml
+
+去掉映射相关的配置，因为已经使用**注解方式**了，增加  
+
+```xml
+<context:component-scan base-package="controller" />
+```
+
+表示从包controller下扫描有**@Controller**注解的类
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+    <context:component-scan base-package="controller" />
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/page/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+<!--    <bean id="simpleUrlHandlerMapping"-->
+<!--          class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">-->
+<!--        <property name="mappings">-->
+<!--            <props>-->
+<!--                <prop key="/index">indexController</prop>-->
+<!--            </props>-->
+<!--        </property>-->
+<!--    </bean>-->
+<!--    <bean id="indexController" class="controller.IndexController"></bean>-->
+</beans>
+```
+
+### 2. 修改IndexController
+
+在类前面加上**@Controller** 表示该类是一个控制器
+在方法handleRequest 前面加上 **@RequestMapping("/index")** 表示路径/index会映射到该方法上
+**注意**：**不再**让IndexController实现Controller接口  
+
+```java
+package controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+@Controller
+public class IndexController {
+    @RequestMapping("/index")
+    public ModelAndView handleRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
+        ModelAndView mav = new ModelAndView("index");
+        mav.addObject("message", "Hello Spring MVC");
+        return mav;
+    }
+}
+```
+
 
 
 
