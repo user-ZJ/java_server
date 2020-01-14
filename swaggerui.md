@@ -56,6 +56,83 @@
 - @ApiImplicitParam() 用于方法 ；表示单独的请求参数 
 - @ApiImplicitParams() 用于方法，包含多个 @ApiImplicitParam
 
+## SpringMVC+SwaggerUI
+
+源码路径：源码\012springmvc+swiggerui
+
+### 1. 导入依赖包
+
+### 2. 配置SwaggerConfig
+
+```java
+package com.demo.configure;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
+@Configuration
+@EnableSwagger2
+@EnableWebMvc     //开启网络服务，要不会找不到swaggerui
+public class SwaggerConfig extends WebMvcConfigurationSupport {
+
+    @Bean
+    public Docket createRestApi() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(apiInfo())
+                .select()
+                .apis(RequestHandlerSelectors.any())  //显示所有类
+                //.apis(RequestHandlerSelectors.withClassAnnotation(Api.class))  //只显示添加@Api注解的类
+                .build();
+    }
+
+    /**
+     * @return 生成文档说明信息
+     */
+    private ApiInfo apiInfo() {
+        return new ApiInfoBuilder()
+                .title("demo API文档") //粗标题
+                .description("接口文档") //描述
+                .termsOfServiceUrl("http://xxx.xxx.com")
+                .version("1.0.0")  //api version
+                .license("LICENSE")  //链接名称
+                .licenseUrl("http://xxx.xxx.com")   //链接地址
+                .build();
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("swagger-ui.html")
+                .addResourceLocations("classpath:/META-INF/resources/");
+
+        registry.addResourceHandler("/webjars/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/");
+    }
+}
+```
+
+### 3. 配置spring-mvc.xml（二选一）
+
+xml配置和继承WebMvcConfigurationSupport类，重写addResourceHandlers等效，配置一个即可
+
+```xml
+<bean class="springfox.documentation.swagger2.configuration.Swagger2DocumentationConfiguration" id="swagger2Config"/>
+<mvc:resources location="classpath:/META-INF/resources/" mapping="swagger-ui.html"/>
+<mvc:resources location="classpath:/META-INF/resources/webjars/" mapping="/webjars/**"/>
+```
+
+
+
 
 
 ## 参考
