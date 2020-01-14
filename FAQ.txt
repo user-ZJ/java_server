@@ -10,3 +10,7 @@ https://blog.csdn.net/yyx3214/article/details/79428582
 ERROR: Could not create connection to database server.
 Exception in thread "main" org.springframework.transaction.CannotCreateTransactionException: Could not open Hibernate Session for transaction; nested exception is org.hibernate.exception.JDBCConnectionException: Could not open connection
 原因为mysql-connector-java 5.1.31 版本较低，将mysql-connector-java版本升级为8.0.18，驱动改为com.mysql.cj.jdbc.Driver
+
+4. HashMap加入数据后，会自动根据首字母排序  
+HashMap增加一些数据，会发现根据String键值排序，并不是增加的时候的顺序，如果是中文，会按汉字的拼音首字母排序  
+解决方案：使用LinkedHashMap替换HashMap  
