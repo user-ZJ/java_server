@@ -9,9 +9,9 @@ JDBC（Java DataBase Connectivity）是Java和数据库之间的一个桥梁，�
 
 
 	<dependency>
-    	<groupId>mysql</groupId>
-    	<artifactId>mysql-connector-java</artifactId>
-    	<version>8.0.18</version>
+		<groupId>mysql</groupId>
+		<artifactId>mysql-connector-java</artifactId>
+		<version>8.0.18</version>
 	</dependency>
 2.初始化驱动  
 通过初始化驱动类com.mysql.jdbc.Driver来实现驱动初始化  
@@ -165,49 +165,51 @@ JDBC处理事务的代码格式：
 ### 1.5 获取自增主键ID
 
 	public static void main(String[] args) {
-        //声明Connection对象
-        Connection con;
-        //驱动程序名
-        String driver = "com.mysql.cj.jdbc.Driver";
-        //URL指向要访问的数据库名mydata
-        String url = "jdbc:mysql://localhost:3306/test?characterEncoding=UTF-8&serverTimezone=GMT&useSSL=false";
-        //MySQL配置时的用户名
-        String user = "root";
-        //MySQL配置时的密码
-        String password = "123456";
-        //遍历查询结果集
-        try {
-            //加载驱动程序
-            Class.forName(driver);
-            //1.getConnection()方法，连接MySQL数据库！！
-            con = DriverManager.getConnection(url, user, password);
-            if (!con.isClosed())
-                System.out.println("Succeeded connecting to the Database!");
-            //2.创建statement类对象，用来执行SQL语句！！
+	    //声明Connection对象
+	    Connection con;
+	    //驱动程序名
+	    String driver = "com.mysql.cj.jdbc.Driver";
+	    //URL指向要访问的数据库名mydata
+	    String url = "jdbc:mysql://localhost:3306/test?characterEncoding=UTF-8&serverTimezone=GMT&useSSL=false";
+	    //MySQL配置时的用户名
+	    String user = "root";
+	    //MySQL配置时的密码
+	    String password = "123456";
+	    //遍历查询结果集
+	    try {
+	        //加载驱动程序
+	        Class.forName(driver);
+	        //1.getConnection()方法，连接MySQL数据库！！
+	        con = DriverManager.getConnection(url, user, password);
+	        if (!con.isClosed())
+	            System.out.println("Succeeded connecting to the Database!");
+	        //2.创建statement类对象，用来执行SQL语句！！
+	 
+	        String sql = "insert into account(username,name,age) values(?,?,?)";
+	 
+	        PreparedStatement preparedStatement = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+	 
+	        //start widh 1
+	        preparedStatement.setString(1,"6");
+	        preparedStatement.setString(2,"6");
+	        preparedStatement.setString(3,"6");
+
  
-            String sql = "insert into account(username,name,age) values(?,?,?)";
- 
-            PreparedStatement preparedStatement = con.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
- 
-            //start widh 1
-            preparedStatement.setString(1,"6");
-            preparedStatement.setString(2,"6");
-            preparedStatement.setString(3,"6");
- 
- 
+
             preparedStatement.executeUpdate();
             ResultSet rs = preparedStatement.getGeneratedKeys();
             rs.next();
             int id = rs.getInt(1);
- 
+     
             System.out.println("id="+id);
- 
+     
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
  
+
 ### 1.6 数据访问层 Data Access Layer (DAL)
 DAL最大的好处是它通过一些方法调用简化了数据库访问操作，比如insert()和find()，而不是建立连接并执行sql语句。  
 这一层处理所有与数据库相关的调用和查询。  
@@ -298,7 +300,7 @@ DAL最大的好处是它通过一些方法调用简化了数据库访问操作�
 	        Connection connection = connectionFactory.getConnection();
 	    }
 	}
-		  
+
 **Data Access Object（Dao）**:DAO可以执行CRUD操作，它可以创建、恢复、更新数据、从表中删除数据。  
 我们的DAO接口应该是这样的:  
 
@@ -344,7 +346,7 @@ DAL最大的好处是它通过一些方法调用简化了数据库访问操作�
 ### 1.7 jdbc数据库连接池
 传统数据库访问方式：一次数据库访问对应一个物理连接,每次操作数据库都要打开、关闭该物理连接, 系统性能严重受损。    
 数据库连接池（Connection Pool）在系统初始运行时，主动建立足够的连接，组成一个池.每次应用应用程序请求数据库连接时，无需重新打开连接，而是从池中取出已有的连接，使用完后，不再关闭，而是归还。   
-  
+
 Java中常用的数据库连接池有：DBCP 、C3P0、BoneCP、Proxool、DDConnectionBroker、DBPool、XAPool、Primrose、SmartPool、MiniConnectionPoolManager及Druid等  
 
 连接池主要由三部分组成：连接池的建立、连接池中连接的使用管理、连接池的关闭。  
@@ -387,12 +389,20 @@ DBCP(是 apache 上的一个 java 连接池项目，也是 tomcat 使用的连�
 	defaultReadOnly=
 	#driver default 指定由连接池所创建的连接的事务级别（TransactionIsolation）
 	defaultTransactionIsolation=READ_UNCOMMITTED
-	
+
 示例源码：  
 源码\dbcp mysql连接池   
 
 
 **C3P0** 
+
+
+
+## 2. nameparameterJdbcdaoSupport
+
+NamedParameterJdbcDaoSupport 官方文档给出的定义是：模板类与JDBC的基本操作集，允许命名参数，而不是传统的使用'？'占位符  
+
+
 
 
 

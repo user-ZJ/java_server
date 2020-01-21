@@ -431,15 +431,25 @@ DI 主要有两种变体：
 
 @GeneratedValue注解有两个属性,分别是strategy和generator,其中generator属性的值是一个字符串,默认为"",其声明了主键生成器的名称(对应于同名的主键生成器@SequenceGenerator和@TableGenerator)   
 
-JPA为开发人员提供了四种主键生成策略,其被定义在枚举类GenerationType中,包括  
+strategy属性，JPA为开发人员提供了四种主键生成策略,其被定义在枚举类GenerationType中,包括  
 
-GenerationType.TABLE,
+GenerationType.TABLE,提供特定的数据库产生主键, 该方式更有利于数据库的移植
 
-GenerationType.SEQUENCE,
+GenerationType.SEQUENCE,通过数据库的序列产生主键, MYSQL 不支持
 
-GenerationType.IDENTITY,主键自增长   
+GenerationType.IDENTITY,主键由数据库生成, 采用数据库自增长, Oracle不支持这种方式  
 
-GenerationType.AUTO,在以上三种主键生成策略中选择其中一种
+GenerationType.AUTO,在以上三种主键生成策略中选择其中一种，是默认选项 
+
+### @GenericGenerator
+
+自定义主键生成策略，一般配合GeneratorValue来用
+
+用hibernate的uuid主键生成器
+
+@GeneratedValue(generator="system-uuid")
+
+@GenericGenerator(name="system-uuid", strategy = "uuid.hex")
 
 ### @Column
 

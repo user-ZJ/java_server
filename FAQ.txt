@@ -13,4 +13,8 @@ Exception in thread "main" org.springframework.transaction.CannotCreateTransacti
 
 4. HashMap加入数据后，会自动根据首字母排序  
 HashMap增加一些数据，会发现根据String键值排序，并不是增加的时候的顺序，如果是中文，会按汉字的拼音首字母排序  
-解决方案：使用LinkedHashMap替换HashMap  
+解决方案：使用LinkedHashMap替换HashMap    
+
+5. 在spring的xml中配置数据库url，直接配置
+<property name = "url" value = "jdbc:mysql://localhost:3306/testdb?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT"/>报错
+解决方案：使用&的转义字符也就是“&amp;”，例如：<property name = "url" value = "jdbc:mysql://localhost:3306/testdb?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=GMT"/>
